@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "utils.h"
+#include <cstdint>
 
 void CLAD_nextStep();
 
@@ -243,13 +244,13 @@ void OTA_recv(uint8_t const* msg, size_t size, uint8_t version)
 {
     // Decode the fields
     uint8_t  status   = msg[0];
-    uint64_t current  = LEU64_decode(msg+1);//  The number of bytes downloaded
-    uint64_t expected = LEU64_decode(msg+8);// The number of bytes expected to be downloaded
+    uint64_t current  = LEU64_decode(msg+1);//  The number of bytes downloaded
+    uint64_t expected = LEU64_decode(msg+8);// The number of bytes expected to be downloaded
 
     static char const* const statusMsgs[] = {"idle","unknown","in progress",
         "complete", "rebooting", "error"};
     
-    printf("OTA: (%llu of %llu downloaded): %s (%d) \n", current, expected, status<= 5?statusMsgs[status]:"unknown", status);
+    printf("OTA: (%lu of %lu downloaded): %s (%d) \n", current, expected, status<= 5?statusMsgs[status]:"unknown", status);
     
     // see if we're done
     // The update has completed the download when the current number of bytes
@@ -320,6 +321,7 @@ void CLAD_interpret(uint8_t type, uint8_t const* msg, size_t size, uint8_t versi
         case 0xf:
             // OTA
             OTA_recv(msg, size, version);
+        break;
         default:
             break;
     }
@@ -335,8 +337,8 @@ void CLAD_ready()
     status_req();
 }
 
-static int _argc;
-static const char** _argv;
+int _argc;
+char ** _argv;
 static int _myState = 0;
 
 // This is called after something else was received so that I can send out a
@@ -392,7 +394,7 @@ void CLAD_nextStep()
       "ap enable" to enable access point
       "log FILENAME" to retrieve the logs
  */
-int main(int argc, const char * argv[])
+int main(int argc, char * argv[])
 {
     _argc = argc;
     _argv = argv;
